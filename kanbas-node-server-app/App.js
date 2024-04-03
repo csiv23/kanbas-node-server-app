@@ -5,6 +5,8 @@ import ModuleRoutes from "./Kanbas/modules/routes.js";
 import cors from "cors";
 const app = express();
 app.use(cors());
+
+app.use(express.json());
 CourseRoutes(app);
 ModuleRoutes(app);
 Lab5(app);
