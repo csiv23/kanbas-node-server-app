@@ -38,9 +38,22 @@ if (process.env.NODE_ENV !== "development") {
 
 app.use(session(sessionOptions));
 
-// CORS configuration to handle credentials
+const allowedOrigins = [
+    'https://a6--wonderful-souffle-8a3a6c.netlify.app',
+    'http://localhost:3000' // Add your localhost client URL here
+];
+
 app.use(cors({
-    origin: 'https://a6--wonderful-souffle-8a3a6c.netlify.app', // Set to the exact origin of the client
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            var msg = 'The CORS policy for this site does not ' +
+                'allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     credentials: true // Allow credentials
 }));
 
