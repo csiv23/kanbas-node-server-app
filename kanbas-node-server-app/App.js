@@ -1,49 +1,60 @@
+// Import necessary modules
 import express from 'express';
-import Hello from "./Hello.js"
-import Lab5 from "./Lab5.js";
-import CourseRoutes from "./Kanbas/courses/routes.js";
-import ModuleRoutes from "./Kanbas/modules/routes.js";
 import cors from "cors";
 import mongoose from "mongoose";
-import UserRoutes from "./Users/routes.js";
 import session from "express-session";
 import "dotenv/config";
 
-const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://127.0.0.1:27017/kanbas'
-mongoose.connect(CONNECTION_STRING);
+// Route handlers
+import Hello from "./Hello.js";
+import Lab5 from "./Lab5.js";
+import CourseRoutes from "./Kanbas/courses/routes.js";
+import ModuleRoutes from "./Kanbas/modules/routes.js";
+import UserRoutes from "./Users/routes.js";
+
+// Database connection
+const CONNECTION_STRING = process.env.DB_CONNECTION_STRING || 'mongodb://127.0.0.1:27017/kanbas';
+mongoose.connect(CONNECTION_STRING, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Express application setup
 const app = express();
-app.use(
-    session({
-        secret: "keyboard cat",
-        resave: false,
-        saveUninitialized: false,
-        proxy: true,
-        cookie: {
-            sameSite: "none",
-            secure: true,
-            domain: "kanbas-node-server-app-sp24-cs5610-02-l55v.onrender.com",
-        },
-    })
-);
+
+// Session configuration
 const sessionOptions = {
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "keyboard cat",
     resave: false,
     saveUninitialized: false,
+    cookie: {}
 };
+
 if (process.env.NODE_ENV !== "development") {
-    sessionOptions.proxy = true;
     sessionOptions.cookie = {
         sameSite: "none",
         secure: true,
         domain: process.env.HTTP_SERVER_DOMAIN,
     };
+    sessionOptions.proxy = true;
 }
+
 app.use(session(sessionOptions));
+
+// CORS configuration to handle credentials
+app.use(cors({
+    origin: 'https://a6--wonderful-souffle-8a3a6c.netlify.app', // Set to the exact origin of the client
+    credentials: true // Allow credentials
+}));
+
+// Middleware
 app.use(express.json());
+
+// Routes
 ModuleRoutes(app);
 CourseRoutes(app);
 Lab5(app);
-Hello(app)
+Hello(app);
 UserRoutes(app);
 
-app.listen(process.env.PORT || 4000);
+// Server listening
+app.listen(process.env.PORT || 4000, () => {
+    console.log(`Server is running on port ${process.env.PORT || 4000}`);
+});
